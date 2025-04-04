@@ -4,7 +4,7 @@ import { BookOpen, Video, HelpCircle, ArrowRight } from 'lucide-react';
 
 const EducationalResources: React.FC = () => {
   return (
-    <section className="py-16 bg-[#dee8d1]">
+    <section className="py-16 bg-[#718f63]">
       <div className="container mx-auto px-4">
         <h2 className="section-title text-center">Educational Resources</h2>
         <p className="section-subtitle text-center">

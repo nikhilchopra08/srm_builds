@@ -17,12 +17,7 @@ const educationalResources = [
     title: "Solar Energy and Sustainability",
     description: "Discover how solar energy contributes to a sustainable future.",
     link: "#",
-  },
-  {
-    title: "Solar Panel Installation Guide",
-    description: "A step-by-step guide to installing solar panels at home.",
-    link: "#",
-  },
+  }
 ];
 
 const stats = [

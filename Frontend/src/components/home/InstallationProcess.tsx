@@ -4,7 +4,7 @@ import { BarChart3, Users, Zap, ArrowRight } from 'lucide-react';
 
 const InstallationProcess: React.FC = () => {
   return (
-    <section className="py-16 bg-[#718f64]">
+    <section className="py-16 bg-[#dde8cf]">
       <div className="container mx-auto px-4">
         <h2 className="section-title text-center text-white">Simple Installation Process</h2>
         <p className="section-subtitle text-center text-white">

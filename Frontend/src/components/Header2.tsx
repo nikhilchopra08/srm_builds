@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Leaf, Menu, X, User } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 const Header2: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,9 +12,9 @@ const Header2: React.FC = () => {
   const navItems = [
     { name: 'Home', path: '/' },
     // { name: 'Assessment', path: '/assessment' },
-    { name: 'Calculator', path: '/calculator' },
+    // { name: 'Calculator', path: '/calculator' },
     // { name: 'Progress', path: '/progress' },
-    { name: 'Resources', path: '/resources' },
+    // { name: 'Resources', path: '/resources' },
   ];
 
   return (

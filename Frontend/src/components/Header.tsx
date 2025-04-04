@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Leaf, Menu, X, User } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,10 +13,10 @@ const Header: React.FC = () => {
     { name: 'Home', path: '/' },
     // { name: 'Assessment', path: '/assessment' },
     { name: 'Products', path: '/products' },
-    { name: 'Calculator', path: '/calculator' },
-    { name: 'Installation', path: '/installation' },
+    // { name: 'Calculator', path: '/calculator' },
+    // { name: 'Installation', path: '/installation' },
     { name: 'Progress', path: '/progress' },
-    { name: 'Resources', path: '/resources' },
+    // { name: 'Resources', path: '/resources' },
   ];
 
   return (

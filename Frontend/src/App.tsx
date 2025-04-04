@@ -12,6 +12,7 @@ import NotFound from './pages/NotFound';
 import Login from './components/Login';
 import Signup from './components/SignUp';
 import AdminPage from './pages/Assessment';
+import EnergyAssessment from './components/home/EnergyAssessment';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/energy" element={<EnergyAssessment />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="products" element={<Products />} />

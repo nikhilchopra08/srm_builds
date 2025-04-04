@@ -41,6 +41,7 @@ const InstallationRequestPage = () => {
           headers: { Authorization: `${token}` }
         });
 
+        // @ts-expect-error data 
         const user = response.data.user;
         setFormData(prev => ({
           ...prev,
@@ -87,7 +88,7 @@ const InstallationRequestPage = () => {
 
       alert('Installation request submitted successfully!');
       navigate('/dashboard');
-    } catch (err) {
+    } catch (err : any) {
       console.error('Submission error:', err);
       setError(err.response?.data?.message || 'Failed to submit request. Please try again.');
     } finally {

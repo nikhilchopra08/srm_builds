@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import { useScroll, useMotionValueEvent } from 'framer-motion';
 import CommunityImpact from '../components/home/CommunityImpact';
 import EducationalResources from '../components/home/EducationalResources';
 import InstallationProcess from '../components/home/InstallationProcess';
 import CalculatorSection from '../components/CalculationSection';
 import ProductCatalog from '../components/home/ProductCatalog';
-import EnergyAssessment from '../components/home/EnergyAssessment';
 
 const slides = [
   {
@@ -98,7 +96,7 @@ const Home: React.FC = () => {
           }}
         >
           <div className='flex flex-col justify-end h-screen'>
-            <div className="grid grid-cols-2 mb-[12vh] gap-8">
+            <div className="grid grid-cols-2 mb-[9vh] gap-8">
               <Link to="/assessment" className="mx-auto bg-white text-green-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-200 text-lg">
                 Get Started
               </Link>
@@ -109,7 +107,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      <EnergyAssessment />
       <ProductCatalog />
       <CalculatorSection />
       <InstallationProcess />

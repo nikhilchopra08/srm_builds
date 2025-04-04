@@ -1,86 +1,125 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Droplets, Zap, ArrowRight } from 'lucide-react';
+import { Sun, Droplets, Zap, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
-const ProductCatalog: React.FC = () => {
+const ProductCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const products = [
+    {
+      image: "/api/placeholder/1200/600",
+      title: "Solar Panels",
+      description: "High-efficiency solar panels to power your home with clean energy from the sun. Our premium solar panels deliver maximum energy conversion and are built to withstand all weather conditions for decades of reliable performance.",
+      icon: <Sun className="h-6 w-6 text-yellow-500 mr-2" />,
+      badge: { text: "Popular", color: "bg-green-500" }
+    },
+    {
+      image: "/api/placeholder/1200/600",
+      title: "Water Systems",
+      description: "Rainwater harvesting and greywater recycling systems for water conservation. Reduce your water footprint and utility bills with our integrated water management solutions designed for modern homes.",
+      icon: <Droplets className="h-6 w-6 text-blue-500 mr-2" />
+    },
+    {
+      image: "/api/placeholder/1200/600",
+      title: "Many More coming soon...",
+      description: "Stay tuned for new green energy solutions coming to our catalog. We're constantly innovating and expanding our product line to help you create a more sustainable home.",
+      icon: <Zap className="h-6 w-6 text-yellow-500 mr-2" />,
+      badge: { text: "New", color: "bg-blue-500" }
+    },
+    {
+      image: "/api/placeholder/1200/600",
+      title: "Many More coming soon...",
+      description: "Stay tuned for new green energy solutions coming to our catalog. We're constantly innovating and expanding our product line to help you create a more sustainable home.",
+      icon: <Zap className="h-6 w-6 text-yellow-500 mr-2" />,
+      badge: { text: "New", color: "bg-blue-500" }
+    }
+  ];
+  
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
   return (
-    <section className="py-16 bg-[#718f63]">
-      <div className="container mx-auto px-4">
-        <h2 className="section-title text-center text-white">Our Green Energy Solutions</h2>
-        <p className="section-subtitle text-center text-white">
-          Explore our range of high-quality, efficient green energy products for your home.
-        </p>
+    <section className="py-20 w-full bg-green-50">
+      <div className="container mx-auto px-4 max-w-6xl">
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-          <div className="card">
-            <div className="h-48 relative overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-                alt="Solar Panels" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                Popular
+        <div className="relative w-full">
+          {/* Carousel Container */}
+          <div className="overflow-hidden rounded-xl shadow-xl">
+            <div className="relative bg-white">
+              {/* Featured Product */}
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-3/5 h-64 md:h-[500px] relative overflow-hidden">
+                  <img 
+                    src={products[currentIndex].image}
+                    alt={products[currentIndex].title} 
+                    className="w-full h-full object-cover"
+                  />
+                  {products[currentIndex].badge && (
+                    <div className={`absolute top-4 right-4 ${products[currentIndex].badge.color} text-white text-sm font-bold px-3 py-1 rounded-lg`}>
+                      {products[currentIndex].badge.text}
+                    </div>
+                  )}
+                </div>
+                <div className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-green-100 p-3 rounded-full mr-3">
+                      {products[currentIndex].icon}
+                    </div>
+                    <h3 className="font-bold text-3xl text-gray-800">{products[currentIndex].title}</h3>
+                  </div>
+                  <p className="text-gray-600 text-lg mb-8 leading-relaxed">{products[currentIndex].description}</p>
+                  <Link to="/products" className="text-green-700 font-medium text-lg hover:text-green-800 inline-flex items-center">
+                    View Products
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </div>
               </div>
-            </div>
-            <div className="p-5 bg-[#dde8cf]">
-              <div className="flex items-center mb-2">
-                <Sun className="h-5 w-5 text-yellow-500 mr-2" />
-                <h3 className="font-bold text-lg">Solar Panels</h3>
-              </div>
-              <p className="text-gray-600 mb-4">High-efficiency solar panels to power your home with clean energy from the sun.</p>
-              <Link to="/products" className="text-[#718f63] font-medium hover:text-green-700 inline-flex items-center">
-                View Products
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
             </div>
           </div>
           
-          <div className="card bg-[#dde8cf]">
-            <div className="h-48 bg-gray-200 relative overflow-hidden">
-              <img 
-                src="https://rainwatermanagement.com/cdn/shop/articles/Above-Ground-1600_2_2000x.jpg?v=1624460157" 
-                alt="Water Conservation" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-5">
-              <div className="flex items-center mb-2">
-                <Droplets className="h-5 w-5 text-blue-500 mr-2" />
-                <h3 className="font-bold text-lg">Water Systems</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Rainwater harvesting and greywater recycling systems for water conservation.</p>
-              <Link to="/products" className="text-[#718f63] font-medium hover:text-green-700 inline-flex items-center">
-                View Products
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-          </div>
+          {/* Navigation Buttons - Larger and more prominent */}
+          <button 
+            onClick={prevSlide}
+            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10"
+            aria-label="Previous product"
+          >
+            <ChevronLeft className="h-8 w-8 text-gray-800" />
+          </button>
           
-          <div className="card bg-[#dde8cf]">
-            <div className="h-48 bg-gray-200 relative overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-                alt="Battery Storage" 
-                className="w-full h-full object-cover"
+          <button 
+            onClick={nextSlide}
+            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10"
+            aria-label="Next product"
+          >
+            <ChevronRight className="h-8 w-8 text-gray-800" />
+          </button>
+          
+          {/* Larger Dots Indicator */}
+          <div className="flex justify-center mt-6">
+            {products.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`mx-2 w-4 h-4 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-green-600 w-8' : 'bg-gray-300'}`}
+                aria-label={`Go to slide ${index + 1}`}
               />
-              <div className="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
-                New
-              </div>
-            </div>
-            <div className="p-5">
-              <div className="flex items-center mb-2">
-                <Zap className="h-5 w-5 text-yellow-500 mr-2" />
-                <h3 className="font-bold text-lg">Many More coming soon...</h3>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
         
-        <div className="text-center mt-10">
-          <Link to="/products" className="btn-primary inline-flex text-[black] items-center bg-[#dde8cf]">
+        <div className="text-center mt-12">
+          <Link to="/products" className="inline-flex items-center px-8 py-4 bg-green-600 text-white text-lg font-medium rounded-lg hover:bg-green-700 transition duration-200 shadow-md">
             View All Products
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <ArrowRight className="ml-2 h-6 w-6" />
           </Link>
         </div>
       </div>
@@ -88,4 +127,4 @@ const ProductCatalog: React.FC = () => {
   );
 };
 
-export default ProductCatalog;
+export default ProductCarousel;
