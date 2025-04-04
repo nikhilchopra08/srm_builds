@@ -11,7 +11,7 @@ import Community from './pages/Community';
 import NotFound from './pages/NotFound';
 import Login from './components/Login';
 import Signup from './components/SignUp';
-import AdminPage from './pages/Assessment';
+import SolarMonitoringDashboard from './pages/Assessment';
 import EnergyAssessment from './components/home/EnergyAssessment';
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<SolarMonitoringDashboard />} />
         <Route path="/energy" element={<EnergyAssessment />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
