@@ -10,7 +10,7 @@ const Header2: React.FC = () => {
   };
 
   const navItems = [
-    { name: 'Home', path: '/' },
+    { name: 'SignUp', path: '/signup' },
     // { name: 'Assessment', path: '/assessment' },
     // { name: 'Calculator', path: '/calculator' },
     // { name: 'Progress', path: '/progress' },

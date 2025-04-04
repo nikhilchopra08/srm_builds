@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Sun, Droplets, Zap, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 const ProductCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const slideRef = useRef(null);
   
   const products = [
     {
@@ -35,93 +37,200 @@ const ProductCarousel = () => {
     }
   ];
   
+  // Auto sliding functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        nextSlide();
+      }
+    }, 6000); // Slide every 6 seconds
+    
+    return () => clearInterval(interval);
+  }, [currentIndex, isTransitioning]);
+  
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    
+    if (slideRef.current) {
+      slideRef.current.style.transition = 'transform 0.8s ease-in-out';
+      slideRef.current.style.transform = 'translateX(-100%)';
+      
+      setTimeout(() => {
+        slideRef.current.style.transition = 'none';
+        slideRef.current.style.transform = 'translateX(0)';
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+        setIsTransitioning(false);
+      }, 800);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    
+    if (slideRef.current) {
+      slideRef.current.style.transition = 'none';
+      slideRef.current.style.transform = 'translateX(-100%)';
+      
+      setTimeout(() => {
+        slideRef.current.style.transition = 'transform 0.8s ease-in-out';
+        slideRef.current.style.transform = 'translateX(0)';
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
+        setIsTransitioning(false);
+      }, 50);
+    }
   };
 
   const goToSlide = (index) => {
-    setCurrentIndex(index);
-  };
-
-  return (
-    <section className="py-20 w-full bg-green-50">
-      <div className="container mx-auto px-4 max-w-6xl">
+    if (isTransitioning || index === currentIndex) return;
+    
+    if (index > currentIndex) {
+      // Going forward
+      setIsTransitioning(true);
+      
+      if (slideRef.current) {
+        slideRef.current.style.transition = 'transform 0.8s ease-in-out';
+        slideRef.current.style.transform = 'translateX(-100%)';
         
-        <div className="relative w-full">
+        setTimeout(() => {
+          slideRef.current.style.transition = 'none';
+          slideRef.current.style.transform = 'translateX(0)';
+          setCurrentIndex(index);
+          setIsTransitioning(false);
+        }, 800);
+      }
+    } else {
+      // Going backward
+      setIsTransitioning(true);
+      
+      if (slideRef.current) {
+        slideRef.current.style.transition = 'none';
+        slideRef.current.style.transform = 'translateX(-100%)';
+        
+        setTimeout(() => {
+          slideRef.current.style.transition = 'transform 0.8s ease-in-out';
+          slideRef.current.style.transform = 'translateX(0)';
+          setCurrentIndex(index);
+          setIsTransitioning(false);
+        }, 50);
+      }
+    }
+  };
+  
+  // Get current and next product for smooth transition
+  const currentProduct = products[currentIndex];
+  const nextProduct = products[(currentIndex + 1) % products.length];
+  
+  return (
+    <section className="py-20 w-full h-screen grid place-content-center bg-green-50">
+      <div className="container mx-automax-w-6xl">
+        
+        <div className="relative w-[86vw]">
           {/* Carousel Container */}
           <div className="overflow-hidden rounded-xl shadow-xl">
-            <div className="relative bg-white">
-              {/* Featured Product */}
-              <div className="flex flex-col md:flex-row">
-                <div className="w-full md:w-3/5 h-64 md:h-[500px] relative overflow-hidden">
-                  <img 
-                    src={products[currentIndex].image}
-                    alt={products[currentIndex].title} 
-                    className="w-full h-full object-cover"
-                  />
-                  {products[currentIndex].badge && (
-                    <div className={`absolute top-4 right-4 ${products[currentIndex].badge.color} text-white text-sm font-bold px-3 py-1 rounded-lg`}>
-                      {products[currentIndex].badge.text}
-                    </div>
-                  )}
-                </div>
-                <div className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center">
-                  <div className="flex items-center mb-4">
-                    <div className="bg-green-100 p-3 rounded-full mr-3">
-                      {products[currentIndex].icon}
-                    </div>
-                    <h3 className="font-bold text-3xl text-gray-800">{products[currentIndex].title}</h3>
+            <div ref={slideRef} className="relative flex">
+              {/* Current Product */}
+              <div className="w-full flex-shrink-0">
+                <div className="flex flex-col md:flex-row bg-white">
+                  <div className="w-full md:w-1/2 md:h-[80vh] relative overflow-hidden">
+                    <img 
+                      src={currentProduct.image}
+                      alt={currentProduct.title} 
+                      className="w-full h-full object-cover"
+                    />
+                    {currentProduct.badge && (
+                      <div className={`absolute top-4 right-4 ${currentProduct.badge.color} text-white text-sm font-bold px-3 py-1 rounded-lg`}>
+                        {currentProduct.badge.text}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-gray-600 text-lg mb-8 leading-relaxed">{products[currentIndex].description}</p>
-                  <Link to="/products" className="text-green-700 font-medium text-lg hover:text-green-800 inline-flex items-center">
-                    View Products
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  
+                  <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-green-100 p-3 rounded-full mr-3">
+                        {currentProduct.icon}
+                      </div>
+                      <h3 className="font-bold text-2xl md:text-3xl text-gray-800">{currentProduct.title}</h3>
+                    </div>
+                    <p className="text-gray-600 text-base md:text-lg mb-8 leading-relaxed">{currentProduct.description}</p>
+                    <Link to="/products" className="text-green-700 font-medium text-lg hover:text-green-800 inline-flex items-center">
+                      Learn More
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Next Product (for smooth transition) */}
+              <div className="w-full flex-shrink-0">
+                <div className="flex flex-col md:flex-row bg-white">
+                  <div className="w-full md:w-1/2 h-64 md:h-96 relative overflow-hidden">
+                    <img 
+                      src={nextProduct.image}
+                      alt={nextProduct.title} 
+                      className="w-full h-full object-cover"
+                    />
+                    {nextProduct.badge && (
+                      <div className={`absolute top-4 right-4 ${nextProduct.badge.color} text-white text-sm font-bold px-3 py-1 rounded-lg`}>
+                        {nextProduct.badge.text}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-green-100 p-3 rounded-full mr-3">
+                        {nextProduct.icon}
+                      </div>
+                      <h3 className="font-bold text-2xl md:text-3xl text-gray-800">{nextProduct.title}</h3>
+                    </div>
+                    <p className="text-gray-600 text-base md:text-lg mb-8 leading-relaxed">{nextProduct.description}</p>
+                    <Link to="/products" className="text-green-700 font-medium text-lg hover:text-green-800 inline-flex items-center">
+                      Learn More
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Navigation Buttons - Larger and more prominent */}
+          {/* Navigation Buttons */}
           <button 
             onClick={prevSlide}
-            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10"
+            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10 disabled:opacity-50"
             aria-label="Previous product"
+            disabled={isTransitioning}
           >
-            <ChevronLeft className="h-8 w-8 text-gray-800" />
+            <ChevronLeft className="h-6 w-6 text-gray-800" />
           </button>
           
           <button 
             onClick={nextSlide}
-            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10"
+            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none z-10 disabled:opacity-50"
             aria-label="Next product"
+            disabled={isTransitioning}
           >
-            <ChevronRight className="h-8 w-8 text-gray-800" />
+            <ChevronRight className="h-6 w-6 text-gray-800" />
           </button>
           
-          {/* Larger Dots Indicator */}
+          {/* Dots Indicator */}
           <div className="flex justify-center mt-6">
             {products.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`mx-2 w-4 h-4 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-green-600 w-8' : 'bg-gray-300'}`}
+                className={`mx-2 w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-green-600 w-6' : 'bg-gray-300'}`}
                 aria-label={`Go to slide ${index + 1}`}
+                disabled={isTransitioning}
               />
             ))}
           </div>
         </div>
-        
-        <div className="text-center mt-12">
-          <Link to="/products" className="inline-flex items-center px-8 py-4 bg-green-600 text-white text-lg font-medium rounded-lg hover:bg-green-700 transition duration-200 shadow-md">
-            View All Products
-            <ArrowRight className="ml-2 h-6 w-6" />
-          </Link>
-        </div>
+    
       </div>
     </section>
   );
