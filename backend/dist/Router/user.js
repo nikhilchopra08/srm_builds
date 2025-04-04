@@ -88,9 +88,11 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
     return res.json({ token: token, userId: user.id });
 }));
 // Fetch user details (protected route)
-router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("user details handler");
-    const id = "0412e867-f4e7-4037-9dcf-cfb6c4736657";
+    console.log("user");
+    // @ts-expect-error no error
+    const id = req.id;
     // Fetch user details excluding sensitive information
     const user = yield db_1.prismaClient.user.findFirst({
         where: {

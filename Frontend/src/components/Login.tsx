@@ -25,6 +25,7 @@ const Login: React.FC = () => {
 
         // Save token to localStorage
         localStorage.setItem("token", token);
+        console.log(token);
 
         // Show success message
         alert("Login successful!");

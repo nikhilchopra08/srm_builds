@@ -90,9 +90,13 @@ router.post("/signin", async (req: Request, res: Response): Promise<any> => {
 });
 
 // Fetch user details (protected route)
-router.get("/", async (req: Request, res: Response): Promise<any> => {
+router.get("/", authMiddleware, async (req: Request, res: Response): Promise<any> => {
     console.log("user details handler");
-    const id = "0412e867-f4e7-4037-9dcf-cfb6c4736657";
+    console.log("user");
+
+    // @ts-expect-error no error
+    const id = req.id;
+
 
     // Fetch user details excluding sensitive information
     const user = await prismaClient.user.findFirst({
@@ -110,6 +114,7 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
             updatedAt: true,
         },
     });
+    
 
     if (!user) {
         return res.status(404).json({ message: "User not found" });

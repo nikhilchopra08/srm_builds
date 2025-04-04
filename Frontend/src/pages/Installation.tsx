@@ -1,295 +1,282 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
+interface InstallationData {
+  fullName: string;
   phone: string;
   address: string;
   location: string;
+  systemType: string;
+  systemSize: string;
+  roofSize: number;
+  energyConsumption: number;
+  notes?: string;
 }
 
 const InstallationRequestPage = () => {
-  // State for user information
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // State for form inputs
-  const [formData, setFormData] = useState({
-    name: '', // Maps to `fullName` in the backend
-    email: '',
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<InstallationData>({
+    fullName: '',
     phone: '',
     address: '',
-    location: '', // Add this field
+    location: '',
     systemType: 'Solar Panel System',
-    systemSize: '5', // Ensure it's a string
+    systemSize: '5',
     roofSize: 500,
-    energyConsumption: 1000, // Add this field
-    additionalNotes: '', // Maps to `notes` in the backend
+    energyConsumption: 1000,
+    notes: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch user information
+  // Pre-fill user data if available
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await axios.get<{ user: User }>('http://localhost:3000/api/v1/user');
-        console.log('User data:', response.data); // Log the response data
-        const userData = response.data.user; // Access the nested `user` object
-        setUser(userData);
-        setFormData((prevData) => ({
-          ...prevData,
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          address: userData.address,
-          location: userData.location, // Auto-fill location if available
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get('http://localhost:3000/api/v1/user', {
+          headers: { Authorization: `${token}` }
+        });
+
+        const user = response.data.user;
+        setFormData(prev => ({
+          ...prev,
+          fullName: user.name || '',
+          phone: user.phone || '',
+          address: user.address || '',
+          location: user.location || ''
         }));
-      } catch (error) {
-        setError('Failed to fetch user information');
-      } finally {
-        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
       }
     };
 
-    fetchUser();
+    fetchUserData();
   }, []);
 
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: name === 'roofSize' || name === 'energyConsumption' 
+        ? Number(value) 
+        : value
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Combine user information and form data
-    const installationRequest = {
-      userId: user?.id, // Include the user ID
-      fullName: formData.name, // Map `name` to `fullName`
-      phone: formData.phone,
-      address: formData.address,
-      location: formData.location, // Add this field
-      systemType: formData.systemType,
-      systemSize: formData.systemSize, // Ensure it's a string
-      roofSize: formData.roofSize,
-      energyConsumption: formData.energyConsumption, // Add this field
-      notes: formData.additionalNotes, // Map `additionalNotes` to `notes`
-    };
-
-    console.log('Installation Request:', installationRequest); // Log the request body
+    setIsSubmitting(true);
+    setError(null);
 
     try {
-      // Send the installation request to the backend
-      await axios.post('http://localhost:3000/api/v1/installation', installationRequest);
-      alert('Thank you for your request! We will contact you shortly.');
-      setFormData({
-        name: '', // Maps to `fullName` in the backend
-        email: '',
-        phone: '',
-        address: '',
-        location: '', // Add this field
-        systemType: 'Solar Panel System',
-        systemSize: '5', // Ensure it's a string
-        roofSize: 500,
-        energyConsumption: 1000, // Add this field
-        additionalNotes: '', // Maps to `notes` in the backend
-      })
-    } catch (error) {
-      console.error('Error submitting installation request:', error);
-      alert('Failed to submit the request. Please try again.');
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication required. Please login.");
+      }
+
+      await axios.post('http://localhost:3000/api/v1/installation', formData, {
+        headers: {
+          Authorization: `${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      alert('Installation request submitted successfully!');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Submission error:', err);
+      setError(err.response?.data?.message || 'Failed to submit request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Display loading state
-  if (loading) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-lg text-gray-600">Loading user information...</p>
-        </div>
-      </section>
-    );
-  }
-
-  // Display error state
-  if (error) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-lg text-red-600">Error: {error}</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Installation Request</h1>
-        <p className="text-lg text-gray-600 mb-12 text-center">
-          Fill out this form to request installation of green energy solutions for your home.
-        </p>
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-green-800 mb-2">Request Green Energy Installation</h1>
+          <p className="text-green-600">Fill out the form below to request your sustainable energy solution</p>
+        </div>
 
-        {/* Installation Request Form */}
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div className="bg-white shadow-lg rounded-lg p-6 sm:p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-green-700">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-green-700">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Address */}
+              <div className="sm:col-span-2">
+                <label htmlFor="address" className="block text-sm font-medium text-green-700">
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Location */}
+              <div className="sm:col-span-2">
+                <label htmlFor="location" className="block text-sm font-medium text-green-700">
+                  Location (City/Region) *
+                </label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* System Type */}
+              <div>
+                <label htmlFor="systemType" className="block text-sm font-medium text-green-700">
+                  System Type *
+                </label>
+                <select
+                  id="systemType"
+                  name="systemType"
+                  value={formData.systemType}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                >
+                  <option>Solar Panel System</option>
+                  <option>Solar + Battery Storage</option>
+                  <option>Wind Turbine</option>
+                  <option>Hybrid System</option>
+                </select>
+              </div>
+
+              {/* System Size */}
+              <div>
+                <label htmlFor="systemSize" className="block text-sm font-medium text-green-700">
+                  System Size (kW) *
+                </label>
+                <input
+                  type="text"
+                  id="systemSize"
+                  name="systemSize"
+                  value={formData.systemSize}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Roof Size */}
+              <div>
+                <label htmlFor="roofSize" className="block text-sm font-medium text-green-700">
+                  Roof Size (sq ft) *
+                </label>
+                <input
+                  type="number"
+                  id="roofSize"
+                  name="roofSize"
+                  value={formData.roofSize}
+                  onChange={handleChange}
+                  min="100"
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Energy Consumption */}
+              <div>
+                <label htmlFor="energyConsumption" className="block text-sm font-medium text-green-700">
+                  Monthly Energy Consumption (kWh) *
+                </label>
+                <input
+                  type="number"
+                  id="energyConsumption"
+                  name="energyConsumption"
+                  value={formData.energyConsumption}
+                  onChange={handleChange}
+                  min="100"
+                  required
+                  className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
             </div>
 
-            {/* Email */}
+            {/* Notes */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Phone Number</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
-            </div>
-
-            {/* System Type */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">System Type</label>
-              <select
-                name="systemType"
-                value={formData.systemType}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              >
-                <option>Solar Panel System</option>
-                <option>Solar + Battery Storage</option>
-                <option>Heat Pump System</option>
-                <option>Complete Home Energy System</option>
-              </select>
-            </div>
-
-            {/* System Size */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">System Size (kW)</label>
-              <input
-                type="text" // Use text input for `systemSize` (string)
-                name="systemSize"
-                value={formData.systemSize}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                required
-              />
-            </div>
-
-            {/* Roof Size */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Roof Size (sq ft)</label>
-              <input
-                type="number"
-                name="roofSize"
-                value={formData.roofSize}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                min="100"
-                max="5000"
-                required
-              />
-            </div>
-
-            {/* Energy Consumption */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Monthly Energy Consumption (kWh)</label>
-              <input
-                type="number"
-                name="energyConsumption"
-                value={formData.energyConsumption}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                min="100"
-                max="10000"
-                required
-              />
-            </div>
-
-            {/* Additional Notes */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Additional Notes</label>
+              <label htmlFor="notes" className="block text-sm font-medium text-green-700">
+                Additional Notes
+              </label>
               <textarea
-                name="additionalNotes"
-                value={formData.additionalNotes}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                rows={4}
+                id="notes"
+                name="notes"
+                rows={3}
+                value={formData.notes}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
             {/* Submit Button */}
-            <div>
+            <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                disabled={isSubmitting}
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                  isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
-                Submit Request
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
               </button>
             </div>
           </form>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

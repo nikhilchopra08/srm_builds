@@ -1,14 +1,17 @@
 import { Request, Response, Router } from "express";
 import { prismaClient } from "../db";
 import { RequestInstallationSchema } from "../types";
+import { authMiddleware } from "../middleware";
 
 const router = Router();
 
-// Hardcoded userId for testing/development
-const DEFAULT_USER_ID = "0412e867-f4e7-4037-9dcf-cfb6c4736657";
-
 // Request an installation
-router.post("/", async (req: Request, res: Response): Promise<any> => {
+router.post("/", authMiddleware , async (req: Request, res: Response): Promise<any> => {
+    // @ts-ignore
+    const userId = req.id;
+
+    // const id = "98cf3e79-8557-456c-a0f8-0e25f722c1f7"
+
     const body = req.body;
     const parsedData = RequestInstallationSchema.safeParse(body);
 
@@ -17,11 +20,10 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
     }
 
     try {
-        // Create the installation request
         const installation = await prismaClient.installation.create({
             data: {
                 ...parsedData.data,
-                userId: DEFAULT_USER_ID, // Add the hardcoded userId
+                userId, // Use the authenticated user's ID
             },
         });
 
@@ -32,11 +34,14 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// Fetch all installations for the default user
-router.get("/", async (req: Request, res: Response): Promise<any> => {
+// Fetch all installations for the authenticated user
+router.get("/", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    // @ts-expect-error no error
+    const userId = req.id;
+
     try {
         const installations = await prismaClient.installation.findMany({
-            where: { userId: DEFAULT_USER_ID }, // Filter by the hardcoded userId
+            where: { userId },
         });
         return res.json(installations);
     } catch (error) {
@@ -45,13 +50,15 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// Fetch a single installation by ID (for the default user)
-router.get("/:id", async (req: Request, res: Response): Promise<any> => {
+// Fetch a single installation by ID for the authenticated user
+router.get("/:id", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    // @ts-expect-error no error
+    const userId = req.id;
     const { id } = req.params;
 
     try {
         const installation = await prismaClient.installation.findFirst({
-            where: { id, userId: DEFAULT_USER_ID }, // Filter by the hardcoded userId
+            where: { id, userId },
         });
 
         if (!installation) {
@@ -65,8 +72,10 @@ router.get("/:id", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// Update an installation (for the default user)
-router.put("/:id", async (req: Request, res: Response): Promise<any> => {
+// Update an installation for the authenticated user
+router.put("/:id", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    // @ts-expect-error no error
+    const userId = req.id;
     const { id } = req.params;
     const body = req.body;
     const parsedData = RequestInstallationSchema.partial().safeParse(body);
@@ -77,7 +86,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<any> => {
 
     try {
         const updatedInstallation = await prismaClient.installation.update({
-            where: { id, userId: DEFAULT_USER_ID }, // Filter by the hardcoded userId
+            where: { id, userId },
             data: parsedData.data,
         });
         return res.json(updatedInstallation);
@@ -87,13 +96,15 @@ router.put("/:id", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// Delete an installation (for the default user)
-router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
+// Delete an installation for the authenticated user
+router.delete("/:id", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    // @ts-expect-error no error
+    const userId = req.id;
     const { id } = req.params;
 
     try {
         await prismaClient.installation.delete({
-            where: { id, userId: DEFAULT_USER_ID }, // Filter by the hardcoded userId
+            where: { id, userId },
         });
         return res.status(204).send();
     } catch (error) {

@@ -9,6 +9,7 @@ interface AuthenticatedRequest extends Request {
 
 export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
     const token = req.headers.authorization as string;
+    console.log(token)
 
     if (!token) {
         res.status(403).json({ message: "Authorization token missing" });
